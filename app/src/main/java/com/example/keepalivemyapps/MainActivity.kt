@@ -6,6 +6,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.text.TextUtils
 import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -18,6 +19,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private val TAG = "MainActivity"
 
+    companion object {
+        private const val PERMISSION_REQUEST_CODE = 100
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -26,17 +31,22 @@ class MainActivity : AppCompatActivity() {
 
         Log.d(TAG, "Activity created")
 
+        loadSavedPackage()
         requestPermissions()
         setupClickListeners()
+    }
 
-        // Check if service is running and update UI
-        updateServiceStatus()
+    private fun loadSavedPackage() {
+        val savedPackage = Config.getTargetPackage(this)
+        if (savedPackage.isNotEmpty() && savedPackage != "com.example.unwantedcallblocker") {
+            binding.etPackageName.setText(savedPackage)
+        }
     }
 
     private fun requestPermissions() {
         val permissionsNeeded = mutableListOf<String>()
 
-        // Add READ_PHONE_STATE permission for call detection
+        // READ_PHONE_STATE permission for call detection
         if (ActivityCompat.checkSelfPermission(
                 this,
                 Manifest.permission.READ_PHONE_STATE
@@ -84,7 +94,17 @@ class MainActivity : AppCompatActivity() {
 
         binding.btnStartService.setOnClickListener {
             Log.d(TAG, "Start Service button clicked")
-            startService()
+            val packageName = binding.etPackageName.text.toString().trim()
+
+            if (TextUtils.isEmpty(packageName)) {
+                Toast.makeText(this, "Please enter a package name", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            // Save the package name
+            Config.setTargetPackage(this, packageName)
+
+            startService(packageName)
         }
 
         binding.btnStopService.setOnClickListener {
@@ -96,15 +116,25 @@ class MainActivity : AppCompatActivity() {
     private fun stopService() {
         IncomingCallService.stopService(this)
         Toast.makeText(this, "Service stopped", Toast.LENGTH_SHORT).show()
-        updateServiceStatus()
+        binding.tvStatus.text = "Service stopped"
     }
 
-    private fun startService() {
-        Log.d(TAG, "Starting service process")
+    private fun startService(packageName: String) {
+        Log.d(TAG, "Starting service for package: $packageName")
 
         // First check if we have necessary permissions
         if (!hasRequiredPermissions()) {
             showPermissionAlert()
+            return
+        }
+
+        // Validate package exists
+        if (!isPackageInstalled(packageName)) {
+            AlertDialog.Builder(this)
+                .setTitle("App Not Found")
+                .setMessage("Package '$packageName' not installed.")
+                .setPositiveButton("OK", null)
+                .show()
             return
         }
 
@@ -119,11 +149,9 @@ class MainActivity : AppCompatActivity() {
                         val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
                         intent.data = Uri.parse("package:$packageName")
                         startActivity(intent)
-                        // User will need to restart service after granting permission
                     }
                     .setNegativeButton("Skip") { _, _ ->
-                        // Start service even without permission
-                        actuallyStartService()
+                        actuallyStartService(packageName)
                     }
                     .setCancelable(false)
                     .show()
@@ -131,7 +159,16 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        actuallyStartService()
+        actuallyStartService(packageName)
+    }
+
+    private fun isPackageInstalled(packageName: String): Boolean {
+        return try {
+            packageManager.getPackageInfo(packageName, 0)
+            true
+        } catch (e: android.content.pm.PackageManager.NameNotFoundException) {
+            false
+        }
     }
 
     private fun hasRequiredPermissions(): Boolean {
@@ -169,8 +206,8 @@ class MainActivity : AppCompatActivity() {
             .show()
     }
 
-    private fun actuallyStartService() {
-        Log.d(TAG, "Actually starting service")
+    private fun actuallyStartService(packageName: String) {
+        Log.d(TAG, "Actually starting service for $packageName")
 
         try {
             // Start the foreground service
@@ -179,11 +216,11 @@ class MainActivity : AppCompatActivity() {
             // Start the worker for periodic monitoring
             SimpleWorker.schedule(this)
 
-            Toast.makeText(this, "Service started with call monitoring", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Service started for $packageName", Toast.LENGTH_SHORT).show()
             Log.d(TAG, "Service started successfully")
 
             // Update UI
-            updateServiceStatus()
+            binding.tvStatus.text = "Monitoring: $packageName"
 
             // Suggest disabling battery optimization
             disableBatteryOptimization()
@@ -195,12 +232,6 @@ class MainActivity : AppCompatActivity() {
             Log.e(TAG, "Error starting service: ${e.message}")
             Toast.makeText(this, "Failed to start service: ${e.message}", Toast.LENGTH_LONG).show()
         }
-    }
-
-    private fun updateServiceStatus() {
-        // You could add logic here to update UI based on service state
-        // For example, change button text or show status message
-        Log.d(TAG, "Updating service status")
     }
 
     private fun disableBatteryOptimization() {
@@ -253,9 +284,5 @@ class MainActivity : AppCompatActivity() {
                 Log.w(TAG, "Some permissions were denied")
             }
         }
-    }
-
-    companion object {
-        private const val PERMISSION_REQUEST_CODE = 100
     }
 }

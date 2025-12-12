@@ -5,6 +5,7 @@ import android.app.*
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
 import android.telephony.PhoneStateListener
@@ -42,31 +43,48 @@ class IncomingCallService : Service() {
 
     override fun onCreate() {
         super.onCreate()
-        Log.d(TAG, "Service created")
+
+        val targetPackage = Config.getTargetPackage(this)
+        Log.d(TAG, "Service created for $targetPackage")
 
         notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         telephonyManager = getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
 
-        createNotificationChannel()
-        startForeground(NOTIFICATION_ID, createNotification())
+        createNotificationChannel(targetPackage)
+        startForegroundWithProperType(targetPackage)
         startCallMonitoring()
     }
 
-    private fun createNotificationChannel() {
+    private fun startForegroundWithProperType(targetPackage: String) {
+        val notification = createNotification(targetPackage)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            // Android 14+ requires FOREGROUND_SERVICE_TYPE_PHONE_CALL
+            startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_PHONE_CALL)
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            // Android 10-13
+            startForeground(NOTIFICATION_ID, notification)
+        } else {
+            // Android 9 and below
+            startForeground(NOTIFICATION_ID, notification)
+        }
+    }
+
+    private fun createNotificationChannel(targetPackage: String) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 CHANNEL_ID,
                 "Call Monitor",
                 NotificationManager.IMPORTANCE_LOW
             ).apply {
-                description = "Monitoring incoming calls"
+                description = "Monitoring calls for $targetPackage"
                 setShowBadge(false)
             }
             notificationManager.createNotificationChannel(channel)
         }
     }
 
-    private fun createNotification(): Notification {
+    private fun createNotification(targetPackage: String): Notification {
         val launchAppIntent = Intent(this, MainActivity::class.java)
         val pendingIntent = PendingIntent.getActivity(
             this,
@@ -77,7 +95,7 @@ class IncomingCallService : Service() {
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("Call Monitor Active")
-            .setContentText("Ready to detect incoming calls")
+            .setContentText("Monitoring for $targetPackage")
             .setSmallIcon(android.R.drawable.ic_menu_call)
             .setContentIntent(pendingIntent)
             .setPriority(NotificationCompat.PRIORITY_LOW)
@@ -87,9 +105,9 @@ class IncomingCallService : Service() {
     }
 
     private fun startCallMonitoring() {
-        Log.d(TAG, "Starting call monitoring")
+        val targetPackage = Config.getTargetPackage(this)
+        Log.d(TAG, "Starting call monitoring for $targetPackage")
 
-        // Check permission
         if (ActivityCompat.checkSelfPermission(
                 this,
                 Manifest.permission.READ_PHONE_STATE
@@ -108,8 +126,8 @@ class IncomingCallService : Service() {
 
                 when (state) {
                     TelephonyManager.CALL_STATE_RINGING -> {
-                        Log.d(TAG, "INCOMING CALL DETECTED")
-                        showCallDetectedNotification(phoneNumber)
+                        Log.d(TAG, "INCOMING CALL DETECTED for $targetPackage")
+                        showCallDetectedNotification(phoneNumber, targetPackage)
                         launchTargetApp()
                     }
 
@@ -124,7 +142,6 @@ class IncomingCallService : Service() {
             }
         }
 
-        // Start listening
         telephonyManager.listen(phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE)
         isMonitoring = true
         Log.d(TAG, "Call monitoring active")
@@ -142,12 +159,12 @@ class IncomingCallService : Service() {
         notificationManager.notify(NOTIFICATION_ID + 1, notification)
     }
 
-    private fun showCallDetectedNotification(phoneNumber: String?) {
+    private fun showCallDetectedNotification(phoneNumber: String?, targetPackage: String) {
         val numberText = phoneNumber ?: "Unknown"
 
         val notification = NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("📞 Call Detected!")
-            .setContentText("Launching app...")
+            .setContentText("Launching $targetPackage")
             .setSmallIcon(android.R.drawable.ic_dialog_info)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)
@@ -157,7 +174,8 @@ class IncomingCallService : Service() {
     }
 
     private fun launchTargetApp() {
-        val targetPackage = "com.example.unwantedcallblocker"
+        val targetPackage = Config.getTargetPackage(this)
+        Log.d(TAG, "Launching target app: $targetPackage")
 
         try {
             val launchIntent = packageManager.getLaunchIntentForPackage(targetPackage)
@@ -170,7 +188,7 @@ class IncomingCallService : Service() {
                 }
 
                 startActivity(launchIntent)
-                Log.d(TAG, "App launched successfully: $targetPackage")
+                Log.d(TAG, "App launched successfully")
             } else {
                 Log.e(TAG, "App not found: $targetPackage")
             }

@@ -8,19 +8,15 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
-
-    <!-- For call detection -->
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.READ_CALL_LOG" />
-
-    <!-- For accessing telecom services -->
     <uses-permission android:name="android.permission.MANAGE_OWN_CALLS" />
 
     <queries>
-        <package android:name="com.example.unwantedcallblocker" />
-        <!-- Query for dialer apps -->
+        <!-- Allow querying any package -->
         <intent>
-            <action android:name="android.intent.action.DIAL" />
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
         </intent>
     </queries>
 
@@ -50,7 +46,7 @@
             android:foregroundServiceType="phoneCall"
             android:permission="android.permission.FOREGROUND_SERVICE" />
 
-        <!-- Foreground Service WITHOUT phoneCall type -->
+        <!-- AppAccessibilityService -->
         <service
             android:name=".AppAccessibilityService"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
