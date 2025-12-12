@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">Keep Alive My Apps</string>
+    <string name="accessibility_service_description">This service monitors app states to keep your target app running</string>
+</resources>
