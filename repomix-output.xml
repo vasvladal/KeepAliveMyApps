@@ -32,7 +32,7 @@ The content is organized as follows:
 <notes>
 - Some files may have been excluded based on .gitignore rules and Repomix's configuration
 - Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
-- Only files matching these patterns are included: app/src/main/java/com/example/keepalivemyapps, app/src/main/java/com/example/keepalivemyapps/ui, app/src/main/java/com/example/keepalivemyapps/AppAccessibilityService.kt, app/src/main/java/com/example/keepalivemyapps/BootReceiver.kt, app/src/main/java/com/example/keepalivemyapps/CallInterceptActivity.kt, app/src/main/java/com/example/keepalivemyapps/CallStateManager.kt, app/src/main/java/com/example/keepalivemyapps/IncomingCallService.kt, app/src/main/java/com/example/keepalivemyapps/MainActivity.kt, app/src/main/java/com/example/keepalivemyapps/SimpleWorker.kt, app/src/main/res, app/src/main/AndroidManifest.xml, app/build.gradle.kts, app/proguard-rules.pro, gradle/wrapper/gradle-wrapper.properties, gradle/libs.versions.toml, build.gradle.kts, gradle.properties, settings.gradle.kts, app/src/main/res/layout, app/src/main/res/values, app/src/main/res/xml, local.properties
+- Only files matching these patterns are included: app/src/main/java/com/example/keepalivemyapps/AppAccessibilityService.kt, app/src/main/java/com/example/keepalivemyapps/BootReceiver.kt, app/src/main/java/com/example/keepalivemyapps/CallInterceptActivity.kt, app/src/main/java/com/example/keepalivemyapps/CallStateManager.kt, app/src/main/java/com/example/keepalivemyapps/Config.kt, app/src/main/java/com/example/keepalivemyapps/IncomingCallService.kt, app/src/main/java/com/example/keepalivemyapps/MainActivity.kt, app/src/main/java/com/example/keepalivemyapps/SimpleWorker.kt, app/src/main/res, app/src/main/AndroidManifest.xml, app/build.gradle.kts, gradle/wrapper/gradle-wrapper.properties, gradle/libs.versions.toml, build.gradle.kts, gradle.properties, local.properties, settings.gradle.kts
 - Files matching patterns in .gitignore are excluded
 - Files matching default ignore patterns are excluded
 - Files are sorted by Git change count (files with more changes are at the bottom)
@@ -42,31 +42,33 @@ The content is organized as follows:
 
 <directory_structure>
 app/build.gradle.kts
-app/proguard-rules.pro
 app/src/main/AndroidManifest.xml
 app/src/main/java/com/example/keepalivemyapps/AppAccessibilityService.kt
 app/src/main/java/com/example/keepalivemyapps/BootReceiver.kt
 app/src/main/java/com/example/keepalivemyapps/CallInterceptActivity.kt
 app/src/main/java/com/example/keepalivemyapps/CallStateManager.kt
+app/src/main/java/com/example/keepalivemyapps/Config.kt
 app/src/main/java/com/example/keepalivemyapps/IncomingCallService.kt
 app/src/main/java/com/example/keepalivemyapps/MainActivity.kt
 app/src/main/java/com/example/keepalivemyapps/SimpleWorker.kt
-app/src/main/java/com/example/keepalivemyapps/ui/theme/Color.kt
-app/src/main/java/com/example/keepalivemyapps/ui/theme/Theme.kt
-app/src/main/java/com/example/keepalivemyapps/ui/theme/Type.kt
 app/src/main/res/drawable/ic_launcher_background.xml
 app/src/main/res/drawable/ic_launcher_foreground.xml
 app/src/main/res/layout/activity_main.xml
-app/src/main/res/mipmap-anydpi/ic_launcher_round.xml
-app/src/main/res/mipmap-anydpi/ic_launcher.xml
+app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml
+app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml
+app/src/main/res/mipmap-hdpi/ic_launcher_foreground.webp
 app/src/main/res/mipmap-hdpi/ic_launcher_round.webp
 app/src/main/res/mipmap-hdpi/ic_launcher.webp
+app/src/main/res/mipmap-mdpi/ic_launcher_foreground.webp
 app/src/main/res/mipmap-mdpi/ic_launcher_round.webp
 app/src/main/res/mipmap-mdpi/ic_launcher.webp
+app/src/main/res/mipmap-xhdpi/ic_launcher_foreground.webp
 app/src/main/res/mipmap-xhdpi/ic_launcher_round.webp
 app/src/main/res/mipmap-xhdpi/ic_launcher.webp
+app/src/main/res/mipmap-xxhdpi/ic_launcher_foreground.webp
 app/src/main/res/mipmap-xxhdpi/ic_launcher_round.webp
 app/src/main/res/mipmap-xxhdpi/ic_launcher.webp
+app/src/main/res/mipmap-xxxhdpi/ic_launcher_foreground.webp
 app/src/main/res/mipmap-xxxhdpi/ic_launcher_round.webp
 app/src/main/res/mipmap-xxxhdpi/ic_launcher.webp
 app/src/main/res/values/colors.xml
@@ -85,78 +87,225 @@ settings.gradle.kts
 <files>
 This section contains the contents of the repository's files.
 
+<file path="app/src/main/java/com/example/keepalivemyapps/Config.kt">
+package com.example.keepalivemyapps
+
+import android.content.Context
+import android.content.SharedPreferences
+
+object Config {
+    private const val PREFS_NAME = "AppConfig"
+    private const val KEY_TARGET_PACKAGE = "target_package"
+    private const val DEFAULT_PACKAGE = "com.example.unwantedcallblocker"
+
+    fun getTargetPackage(context: Context): String {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        return prefs.getString(KEY_TARGET_PACKAGE, DEFAULT_PACKAGE) ?: DEFAULT_PACKAGE
+    }
+
+    fun setTargetPackage(context: Context, packageName: String) {
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit().putString(KEY_TARGET_PACKAGE, packageName).apply()
+    }
+}
+</file>
+
+<file path="app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml">
+<?xml version="1.0" encoding="utf-8"?>
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@drawable/ic_launcher_background"/>
+    <foreground android:drawable="@mipmap/ic_launcher_foreground"/>
+</adaptive-icon>
+</file>
+
+<file path="app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml">
+<?xml version="1.0" encoding="utf-8"?>
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <background android:drawable="@drawable/ic_launcher_background"/>
+    <foreground android:drawable="@mipmap/ic_launcher_foreground"/>
+</adaptive-icon>
+</file>
+
 <file path="app/build.gradle.kts">
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import java.io.FileInputStream
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jetbrains.kotlin.konan.properties.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.detekt)
+}
+
+val keystorePropertiesFile: File = rootProject.file("keystore.properties")
+val keystoreProperties = Properties()
+
+fun getKeystoreFile(path: String): File {
+    val file = file(path)
+    if (file.exists()) return file
+    val rootFile = rootProject.file(path)
+    if (rootFile.exists()) return rootFile
+    throw RuntimeException("Keystore file not found: $path")
+}
+
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 }
 
 android {
+    compileSdk = project.libs.versions.app.build.compileSDKVersion.get().toInt()
+
+    // ADD THIS LINE - Fixes the namespace error
     namespace = "com.example.keepalivemyapps"
-    compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.keepalivemyapps"
-        minSdk = 29
-        targetSdk = 34
-        versionCode = 1
-        versionName = "1.0"
+        applicationId = "com.example.keepalivemyapps"  // Make sure this matches your package
+        minSdk = project.libs.versions.app.build.minimumSDK.get().toInt()
+        targetSdk = project.libs.versions.app.build.targetSDK.get().toInt()
+        versionName = project.property("VERSION_NAME").toString()
+        versionCode = project.property("VERSION_CODE").toString().toInt()
+        vectorDrawables.useSupportLibrary = true
+        setProperty("archivesBaseName", "voicerecorder-$versionCode")
+    }
 
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    signingConfigs {
+        create("release") {
+            // Try to load from keystore.properties first
+            if (keystorePropertiesFile.exists()) {
+                try {
+                    keyAlias = keystoreProperties.getProperty("keyAlias") ?: ""
+                    keyPassword = keystoreProperties.getProperty("keyPassword") ?: ""
+                    val storeFilePath = keystoreProperties.getProperty("storeFile") ?: ""
+                    storeFile = getKeystoreFile(storeFilePath)
+                    storePassword = keystoreProperties.getProperty("storePassword") ?: ""
+                } catch (e: Exception) {
+                    logger.error("Failed to load from keystore.properties: ${e.message}")
+                }
+            }
+            // Fall back to environment variables
+            else {
+                val envAlias = providers.environmentVariable("SIGNING_KEY_ALIAS").orNull
+                val envKeyPass = providers.environmentVariable("SIGNING_KEY_PASSWORD").orNull
+                val envStoreFile = providers.environmentVariable("SIGNING_STORE_FILE").orNull
+                val envStorePass = providers.environmentVariable("SIGNING_STORE_PASSWORD").orNull
+
+                if (envAlias != null && envKeyPass != null && envStoreFile != null && envStorePass != null) {
+                    keyAlias = envAlias
+                    keyPassword = envKeyPass
+                    storeFile = getKeystoreFile(envStoreFile)
+                    storePassword = envStorePass
+                } else {
+                    logger.warn("No signing configuration found. Build will be unsigned.")
+                }
+            }
+
+            // Enable signature schemes (compatible with all AGP versions)
+            @Suppress("UnstableApiUsage")
+            if (this is com.android.build.gradle.internal.dsl.SigningConfig) {
+                this.enableV1Signing = true
+                this.enableV2Signing = true
+
+                // Try to enable v3 if available
+                try {
+                    this.javaClass.getMethod("setEnableV3Signing", Boolean::class.java)
+                        .invoke(this, true)
+                } catch (e: NoSuchMethodException) {
+                    logger.info("v3 signing not available in this AGP version")
+                }
+
+                // Try to enable v4 if available
+                try {
+                    this.javaClass.getMethod("setEnableV4Signing", Boolean::class.java)
+                        .invoke(this, true)
+                } catch (e: NoSuchMethodException) {
+                    logger.info("v4 signing not available in this AGP version")
+                }
+            }
+        }
+    }
+
+    buildFeatures {
+        viewBinding = true
+        buildConfig = true
     }
 
     buildTypes {
+        debug {
+            applicationIdSuffix = ".debug"
+        }
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+
+            // Set signing config if it has valid data
+            signingConfig = signingConfigs.getByName("release").takeIf { config ->
+                config.keyAlias?.isNotBlank() == true &&
+                        config.keyPassword?.isNotBlank() == true &&
+                        config.storeFile?.exists() == true &&
+                        config.storePassword?.isNotBlank() == true
+            }
+
+            if (signingConfig == null) {
+                logger.warn("Release build will be unsigned - invalid signing configuration")
+            }
         }
     }
 
-compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
+    sourceSets {
+        getByName("main").java.srcDirs("src/main/kotlin")
     }
 
-    kotlin {
-        compilerOptions {
-            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
-        }
+    compileOptions {
+        val currentJavaVersionFromLibs = JavaVersion.valueOf(libs.versions.app.build.javaVersion.get())
+        sourceCompatibility = currentJavaVersionFromLibs
+        targetCompatibility = currentJavaVersionFromLibs
     }
 
-buildFeatures {
-        viewBinding = true
-        compose = true
-        buildConfig = true  // Enable BuildConfig generation
+    kotlinOptions {
+        jvmTarget = project.libs.versions.app.build.kotlinJVMTarget.get()
     }
 
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.7"
+    dependenciesInfo {
+        includeInApk = false
     }
 
-    packaging {
-        resources {
-            excludes += setOf(
-                "META-INF/NOTICE.md",
-                "META-INF/LICENSE.md",
-                "META-INF/DEPENDENCIES",
-                "META-INF/INDEX.LIST"
-            )
-            merges += setOf("META-INF/LICENSE")
+    androidResources {
+        @Suppress("UnstableApiUsage")
+        generateLocaleConfig = true
+    }
+
+    tasks.withType<KotlinCompile> {
+        compilerOptions.jvmTarget.set(
+            JvmTarget.fromTarget(project.libs.versions.app.build.kotlinJVMTarget.get())
+        )
+    }
+
+    lint {
+        checkReleaseBuilds = false
+        abortOnError = true
+        warningsAsErrors = false
+        baseline = file("lint-baseline.xml")
+        lintConfig = rootProject.file("lint.xml")
+    }
+
+    bundle {
+        language {
+            enableSplit = false
         }
     }
 }
 
-// Global dependency resolution strategy to handle annotation conflicts
-configurations.all {
-    resolutionStrategy {
-        force("org.jetbrains:annotations:26.0.2")
-    }
-    exclude(group = "org.jetbrains", module = "annotations-java5")
-    exclude(group = "com.google.guava", module = "listenablefuture")
+detekt {
+    baseline = file("detekt-baseline.xml")
+    config.setFrom("$rootDir/detekt.yml")
+    buildUponDefaultConfig = true
+    allRules = false
 }
 
 dependencies {
@@ -164,7 +313,7 @@ dependencies {
     implementation(libs.core.ktx)
     implementation(libs.appcompat)
     implementation(libs.material)
-// Compose BOM and libraries
+    // Compose BOM and libraries
     implementation(platform(libs.compose.bom))
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.graphics)
@@ -192,36 +341,8 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
 
     implementation(libs.androidx.concurrent.futures)
+    implementation(libs.guava)
 }
-</file>
-
-<file path="app/proguard-rules.pro">
-# Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
-
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
-
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
-
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
--keep class androidx.concurrent.** { *; }
--keep class androidx.profileinstaller.** { *; }
--keep class com.google.common.util.concurrent.** { *; }
--keep class com.miui.** { *; }
--keep interface com.miui.** { *; }
 </file>
 
 <file path="app/src/main/AndroidManifest.xml">
@@ -231,21 +352,19 @@ dependencies {
 
     <!-- Permissions -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_PHONE_CALL" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
-
-    <!-- For call detection (restricted on Android 12+) -->
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
-
-    <!-- For accessing telecom services -->
+    <uses-permission android:name="android.permission.READ_CALL_LOG" />
     <uses-permission android:name="android.permission.MANAGE_OWN_CALLS" />
 
     <queries>
-        <package android:name="com.your.target.app" />
-        <!-- Query for dialer apps -->
+        <!-- Allow querying any package -->
         <intent>
-            <action android:name="android.intent.action.DIAL" />
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
         </intent>
     </queries>
 
@@ -268,7 +387,14 @@ dependencies {
             </intent-filter>
         </activity>
 
-        <!-- Foreground Service WITHOUT phoneCall type -->
+        <!-- IncomingCallService with foregroundServiceType -->
+        <service
+            android:name=".IncomingCallService"
+            android:exported="false"
+            android:foregroundServiceType="phoneCall"
+            android:permission="android.permission.FOREGROUND_SERVICE" />
+
+        <!-- AppAccessibilityService -->
         <service
             android:name=".AppAccessibilityService"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
@@ -479,12 +605,18 @@ object CallStateManager {
 <file path="app/src/main/java/com/example/keepalivemyapps/IncomingCallService.kt">
 package com.example.keepalivemyapps
 
+import android.Manifest
 import android.app.*
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
+import android.telephony.PhoneStateListener
 import android.telephony.TelephonyManager
+import android.util.Log
+import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 
 class IncomingCallService : Service() {
@@ -492,10 +624,15 @@ class IncomingCallService : Service() {
     companion object {
         private const val NOTIFICATION_ID = 1001
         private const val CHANNEL_ID = "incoming_call_service"
+        private const val TAG = "IncomingCallService"
 
         fun startService(context: Context) {
             val intent = Intent(context, IncomingCallService::class.java)
-            context.startForegroundService(intent)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                context.startForegroundService(intent)
+            } else {
+                context.startService(intent)
+            }
         }
 
         fun stopService(context: Context) {
@@ -505,34 +642,54 @@ class IncomingCallService : Service() {
     }
 
     private lateinit var notificationManager: NotificationManager
+    private lateinit var telephonyManager: TelephonyManager
+    private var phoneStateListener: PhoneStateListener? = null
+    private var isMonitoring = false
 
     override fun onCreate() {
         super.onCreate()
 
+        val targetPackage = Config.getTargetPackage(this)
+        Log.d(TAG, "Service created for $targetPackage")
+
         notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        telephonyManager = getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
 
-        // Create notification channel
-        createNotificationChannel()
-
-        // Start as foreground service
-        startForeground(NOTIFICATION_ID, createNotification())
+        createNotificationChannel(targetPackage)
+        startForegroundWithProperType(targetPackage)
+        startCallMonitoring()
     }
 
-    private fun createNotificationChannel() {
+    private fun startForegroundWithProperType(targetPackage: String) {
+        val notification = createNotification(targetPackage)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            // Android 14+ requires FOREGROUND_SERVICE_TYPE_PHONE_CALL
+            startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_PHONE_CALL)
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            // Android 10-13
+            startForeground(NOTIFICATION_ID, notification)
+        } else {
+            // Android 9 and below
+            startForeground(NOTIFICATION_ID, notification)
+        }
+    }
+
+    private fun createNotificationChannel(targetPackage: String) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 CHANNEL_ID,
-                "App Monitor Service",
+                "Call Monitor",
                 NotificationManager.IMPORTANCE_LOW
             ).apply {
-                description = "Monitors incoming calls to launch your app"
+                description = "Monitoring calls for $targetPackage"
                 setShowBadge(false)
             }
             notificationManager.createNotificationChannel(channel)
         }
     }
 
-    private fun createNotification(): Notification {
+    private fun createNotification(targetPackage: String): Notification {
         val launchAppIntent = Intent(this, MainActivity::class.java)
         val pendingIntent = PendingIntent.getActivity(
             this,
@@ -542,8 +699,8 @@ class IncomingCallService : Service() {
         )
 
         return NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("App Monitor Active")
-            .setContentText("Monitoring for incoming calls")
+            .setContentTitle("Call Monitor Active")
+            .setContentText("Monitoring for $targetPackage")
             .setSmallIcon(android.R.drawable.ic_menu_call)
             .setContentIntent(pendingIntent)
             .setPriority(NotificationCompat.PRIORITY_LOW)
@@ -552,39 +709,126 @@ class IncomingCallService : Service() {
             .build()
     }
 
+    private fun startCallMonitoring() {
+        val targetPackage = Config.getTargetPackage(this)
+        Log.d(TAG, "Starting call monitoring for $targetPackage")
+
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.READ_PHONE_STATE
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            Log.e(TAG, "READ_PHONE_STATE permission denied")
+            showPermissionNotification()
+            return
+        }
+
+        phoneStateListener = object : PhoneStateListener() {
+            override fun onCallStateChanged(state: Int, phoneNumber: String?) {
+                super.onCallStateChanged(state, phoneNumber)
+
+                Log.d(TAG, "Call state: $state, Number: ${phoneNumber ?: "Unknown"}")
+
+                when (state) {
+                    TelephonyManager.CALL_STATE_RINGING -> {
+                        Log.d(TAG, "INCOMING CALL DETECTED for $targetPackage")
+                        showCallDetectedNotification(phoneNumber, targetPackage)
+                        launchTargetApp()
+                    }
+
+                    TelephonyManager.CALL_STATE_IDLE -> {
+                        Log.d(TAG, "Call ended")
+                    }
+
+                    TelephonyManager.CALL_STATE_OFFHOOK -> {
+                        Log.d(TAG, "Call answered")
+                    }
+                }
+            }
+        }
+
+        telephonyManager.listen(phoneStateListener, PhoneStateListener.LISTEN_CALL_STATE)
+        isMonitoring = true
+        Log.d(TAG, "Call monitoring active")
+    }
+
+    private fun showPermissionNotification() {
+        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
+            .setContentTitle("Permission Required")
+            .setContentText("Grant phone permission for call detection")
+            .setSmallIcon(android.R.drawable.ic_dialog_alert)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setAutoCancel(true)
+            .build()
+
+        notificationManager.notify(NOTIFICATION_ID + 1, notification)
+    }
+
+    private fun showCallDetectedNotification(phoneNumber: String?, targetPackage: String) {
+        val numberText = phoneNumber ?: "Unknown"
+
+        val notification = NotificationCompat.Builder(this, CHANNEL_ID)
+            .setContentTitle("📞 Call Detected!")
+            .setContentText("Launching $targetPackage")
+            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setAutoCancel(true)
+            .build()
+
+        notificationManager.notify(NOTIFICATION_ID + 2, notification)
+    }
+
+    private fun launchTargetApp() {
+        val targetPackage = Config.getTargetPackage(this)
+        Log.d(TAG, "Launching target app: $targetPackage")
+
+        try {
+            val launchIntent = packageManager.getLaunchIntentForPackage(targetPackage)
+            if (launchIntent != null) {
+                launchIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                launchIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    launchIntent.addFlags(Intent.FLAG_ACTIVITY_REQUIRE_NON_BROWSER)
+                }
+
+                startActivity(launchIntent)
+                Log.d(TAG, "App launched successfully")
+            } else {
+                Log.e(TAG, "App not found: $targetPackage")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Launch error: ${e.message}")
+        }
+    }
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        // Start monitoring in background
-        startCallMonitoring()
+        Log.d(TAG, "Service started")
+
+        if (!isMonitoring) {
+            startCallMonitoring()
+        }
 
         return START_STICKY
     }
 
-    private fun startCallMonitoring() {
-        // Note: On Android 12+, READ_PHONE_STATE is heavily restricted
-        // This may not work on all devices without user granting special permission
+    private fun stopCallMonitoring() {
+        Log.d(TAG, "Stopping call monitoring")
 
-        Thread {
-            // Alternative approach: Check periodically if target app is running
-            while (true) {
-                try {
-                    // Check every 30 seconds
-                    Thread.sleep(30000)
+        phoneStateListener?.let {
+            telephonyManager.listen(it, PhoneStateListener.LISTEN_NONE)
+        }
+        phoneStateListener = null
+        isMonitoring = false
+    }
 
-                    // Here you could check if target app is running
-                    // and launch it if needed
-
-                } catch (e: InterruptedException) {
-                    break
-                }
-            }
-        }.start()
+    override fun onDestroy() {
+        Log.d(TAG, "Service destroyed")
+        stopCallMonitoring()
+        super.onDestroy()
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
-
-    override fun onDestroy() {
-        super.onDestroy()
-    }
 }
 </file>
 
@@ -597,6 +841,8 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
+import android.text.TextUtils
+import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -606,6 +852,11 @@ import com.example.keepalivemyapps.databinding.ActivityMainBinding
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
+    private val TAG = "MainActivity"
+
+    companion object {
+        private const val PERMISSION_REQUEST_CODE = 100
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -613,12 +864,31 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        Log.d(TAG, "Activity created")
+
+        loadSavedPackage()
         requestPermissions()
         setupClickListeners()
     }
 
+    private fun loadSavedPackage() {
+        val savedPackage = Config.getTargetPackage(this)
+        if (savedPackage.isNotEmpty() && savedPackage != "com.example.unwantedcallblocker") {
+            binding.etPackageName.setText(savedPackage)
+        }
+    }
+
     private fun requestPermissions() {
         val permissionsNeeded = mutableListOf<String>()
+
+        // READ_PHONE_STATE permission for call detection
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.READ_PHONE_STATE
+            ) != android.content.pm.PackageManager.PERMISSION_GRANTED
+        ) {
+            permissionsNeeded.add(Manifest.permission.READ_PHONE_STATE)
+        }
 
         // Notification permission for Android 13+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -643,29 +913,67 @@ class MainActivity : AppCompatActivity() {
         }
 
         if (permissionsNeeded.isNotEmpty()) {
+            Log.d(TAG, "Requesting permissions: $permissionsNeeded")
             ActivityCompat.requestPermissions(
                 this,
                 permissionsNeeded.toTypedArray(),
                 PERMISSION_REQUEST_CODE
             )
         } else {
-            startService()
+            Log.d(TAG, "All permissions granted")
         }
     }
 
     private fun setupClickListeners() {
+        Log.d(TAG, "Setting up click listeners")
+
         binding.btnStartService.setOnClickListener {
-            startService()
+            Log.d(TAG, "Start Service button clicked")
+            val packageName = binding.etPackageName.text.toString().trim()
+
+            if (TextUtils.isEmpty(packageName)) {
+                Toast.makeText(this, "Please enter a package name", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            // Save the package name
+            Config.setTargetPackage(this, packageName)
+
+            startService(packageName)
         }
 
         binding.btnStopService.setOnClickListener {
-            IncomingCallService.stopService(this)
-            Toast.makeText(this, "Service stopped", Toast.LENGTH_SHORT).show()
+            Log.d(TAG, "Stop Service button clicked")
+            stopService()
         }
     }
 
-    private fun startService() {
-        // Request exact alarm permission for Android 12+
+    private fun stopService() {
+        IncomingCallService.stopService(this)
+        Toast.makeText(this, "Service stopped", Toast.LENGTH_SHORT).show()
+        binding.tvStatus.text = "Service stopped"
+    }
+
+    private fun startService(packageName: String) {
+        Log.d(TAG, "Starting service for package: $packageName")
+
+        // First check if we have necessary permissions
+        if (!hasRequiredPermissions()) {
+            showPermissionAlert()
+            return
+        }
+
+        // Validate package exists
+        if (!isPackageInstalled(packageName)) {
+            AlertDialog.Builder(this)
+                .setTitle("App Not Found")
+                .setMessage("Package '$packageName' not installed.")
+                .setPositiveButton("OK", null)
+                .show()
+            return
+        }
+
+        // Check for exact alarm permission (Android 12+)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             val alarmManager = getSystemService(android.app.AlarmManager::class.java)
             if (!alarmManager.canScheduleExactAlarms()) {
@@ -677,18 +985,88 @@ class MainActivity : AppCompatActivity() {
                         intent.data = Uri.parse("package:$packageName")
                         startActivity(intent)
                     }
-                    .setNegativeButton("Skip", null)
+                    .setNegativeButton("Skip") { _, _ ->
+                        actuallyStartService(packageName)
+                    }
+                    .setCancelable(false)
                     .show()
                 return
             }
         }
 
-        // Start the foreground service
-        IncomingCallService.startService(this)
-        Toast.makeText(this, "Service started", Toast.LENGTH_SHORT).show()
+        actuallyStartService(packageName)
+    }
 
-        // Disable battery optimization
-        disableBatteryOptimization()
+    private fun isPackageInstalled(packageName: String): Boolean {
+        return try {
+            packageManager.getPackageInfo(packageName, 0)
+            true
+        } catch (e: android.content.pm.PackageManager.NameNotFoundException) {
+            false
+        }
+    }
+
+    private fun hasRequiredPermissions(): Boolean {
+        val requiredPermissions = mutableListOf<String>()
+
+        requiredPermissions.add(Manifest.permission.READ_PHONE_STATE)
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            requiredPermissions.add(Manifest.permission.POST_NOTIFICATIONS)
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            requiredPermissions.add(Manifest.permission.MANAGE_OWN_CALLS)
+        }
+
+        for (permission in requiredPermissions) {
+            if (ActivityCompat.checkSelfPermission(this, permission)
+                != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                return false
+            }
+        }
+
+        return true
+    }
+
+    private fun showPermissionAlert() {
+        AlertDialog.Builder(this)
+            .setTitle("Permissions Required")
+            .setMessage("This app needs phone and notification permissions to detect calls and work properly.")
+            .setPositiveButton("Grant Permissions") { _, _ ->
+                requestPermissions()
+            }
+            .setNegativeButton("Cancel", null)
+            .setCancelable(false)
+            .show()
+    }
+
+    private fun actuallyStartService(packageName: String) {
+        Log.d(TAG, "Actually starting service for $packageName")
+
+        try {
+            // Start the foreground service
+            IncomingCallService.startService(this)
+
+            // Start the worker for periodic monitoring
+            SimpleWorker.schedule(this)
+
+            Toast.makeText(this, "Service started for $packageName", Toast.LENGTH_SHORT).show()
+            Log.d(TAG, "Service started successfully")
+
+            // Update UI
+            binding.tvStatus.text = "Monitoring: $packageName"
+
+            // Suggest disabling battery optimization
+            disableBatteryOptimization()
+
+        } catch (e: SecurityException) {
+            Log.e(TAG, "Security exception starting service: ${e.message}")
+            Toast.makeText(this, "Permission denied. Please grant all permissions.", Toast.LENGTH_LONG).show()
+        } catch (e: Exception) {
+            Log.e(TAG, "Error starting service: ${e.message}")
+            Toast.makeText(this, "Failed to start service: ${e.message}", Toast.LENGTH_LONG).show()
+        }
     }
 
     private fun disableBatteryOptimization() {
@@ -717,26 +1095,30 @@ class MainActivity : AppCompatActivity() {
         grantResults: IntArray
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+
+        Log.d(TAG, "onRequestPermissionsResult: requestCode=$requestCode")
+
         if (requestCode == PERMISSION_REQUEST_CODE) {
             var allGranted = true
-            for (result in grantResults) {
-                if (result != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            for (i in grantResults.indices) {
+                val permission = permissions[i]
+                val granted = grantResults[i] == android.content.pm.PackageManager.PERMISSION_GRANTED
+
+                Log.d(TAG, "Permission $permission: ${if (granted) "GRANTED" else "DENIED"}")
+
+                if (!granted) {
                     allGranted = false
-                    break
                 }
             }
 
             if (allGranted) {
-                startService()
-                Toast.makeText(this, "Permissions granted", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "All permissions granted", Toast.LENGTH_SHORT).show()
+                Log.d(TAG, "All permissions granted")
             } else {
                 Toast.makeText(this, "Some permissions denied. App may not work properly.", Toast.LENGTH_LONG).show()
+                Log.w(TAG, "Some permissions were denied")
             }
         }
-    }
-
-    companion object {
-        private const val PERMISSION_REQUEST_CODE = 100
     }
 }
 </file>
@@ -745,6 +1127,7 @@ class MainActivity : AppCompatActivity() {
 package com.example.keepalivemyapps
 
 import android.content.Context
+import android.util.Log
 import androidx.work.Worker
 import androidx.work.WorkerParameters
 import java.util.concurrent.TimeUnit
@@ -754,310 +1137,116 @@ class SimpleWorker(
     params: WorkerParameters
 ) : Worker(context, params) {
 
-    override fun doWork(): Result {
-        // Simple check every 10 minutes
-        val targetPackage = "com.your.target.app"
-
-        // We could check if app is running here, but main focus is call detection
-
-        return Result.success()
-    }
-
     companion object {
+        private const val TAG = "SimpleWorker"
+
         fun schedule(context: Context) {
-            // Optional: Schedule periodic work every 10 minutes
             val workRequest = androidx.work.PeriodicWorkRequestBuilder<SimpleWorker>(
-                10, TimeUnit.MINUTES
-            ).build()
+                15, TimeUnit.MINUTES
+            )
+                .setInitialDelay(5, TimeUnit.MINUTES)
+                .build()
 
             androidx.work.WorkManager.getInstance(context)
                 .enqueue(workRequest)
+
+            val targetPackage = Config.getTargetPackage(context)
+            Log.d(TAG, "Worker scheduled for $targetPackage")
         }
     }
-}
-</file>
 
-<file path="app/src/main/java/com/example/keepalivemyapps/ui/theme/Color.kt">
-package com.example.keepalivemyapps.ui.theme
+    override fun doWork(): Result {
+        val targetPackage = Config.getTargetPackage(applicationContext)
+        Log.d(TAG, "Worker running - checking service health")
+        Log.d(TAG, "Monitoring target: $targetPackage")
 
-import androidx.compose.ui.graphics.Color
-
-val Purple80 = Color(0xFFD0BCFF)
-val PurpleGrey80 = Color(0xFFCCC2DC)
-val Pink80 = Color(0xFFEFB8C8)
-
-val Purple40 = Color(0xFF6650a4)
-val PurpleGrey40 = Color(0xFF625b71)
-val Pink40 = Color(0xFF7D5260)
-</file>
-
-<file path="app/src/main/java/com/example/keepalivemyapps/ui/theme/Theme.kt">
-package com.example.keepalivemyapps.ui.theme
-
-import android.os.Build
-import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
-import androidx.compose.material3.lightColorScheme
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
-
-private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
-)
-
-private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
-
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
-)
-
-@Composable
-fun KeepAliveMyAppsTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
-    content: @Composable () -> Unit
-) {
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+        val packageInfo = try {
+            applicationContext.packageManager.getPackageInfo(targetPackage, 0)
+            true
+        } catch (e: Exception) {
+            false
         }
 
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
+        Log.d(TAG, "Target app '$targetPackage' installed: $packageInfo")
+        return Result.success()
     }
-
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography,
-        content = content
-    )
 }
-</file>
-
-<file path="app/src/main/java/com/example/keepalivemyapps/ui/theme/Type.kt">
-package com.example.keepalivemyapps.ui.theme
-
-import androidx.compose.material3.Typography
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.sp
-
-// Set of Material typography styles to start with
-val Typography = Typography(
-    bodyLarge = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Normal,
-        fontSize = 16.sp,
-        lineHeight = 24.sp,
-        letterSpacing = 0.5.sp
-    )
-    /* Other default text styles to override
-    titleLarge = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Normal,
-        fontSize = 22.sp,
-        lineHeight = 28.sp,
-        letterSpacing = 0.sp
-    ),
-    labelSmall = TextStyle(
-        fontFamily = FontFamily.Default,
-        fontWeight = FontWeight.Medium,
-        fontSize = 11.sp,
-        lineHeight = 16.sp,
-        letterSpacing = 0.5.sp
-    )
-    */
-)
 </file>
 
 <file path="app/src/main/res/drawable/ic_launcher_background.xml">
 <?xml version="1.0" encoding="utf-8"?>
-<vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="108dp"
+<vector
     android:height="108dp"
+    android:width="108dp"
+    android:viewportHeight="108"
     android:viewportWidth="108"
-    android:viewportHeight="108">
-    <path
-        android:fillColor="#3DDC84"
-        android:pathData="M0,0h108v108h-108z" />
-    <path
-        android:fillColor="#00000000"
-        android:pathData="M9,0L9,108"
-        android:strokeWidth="0.8"
-        android:strokeColor="#33FFFFFF" />
-    <path
-        android:fillColor="#00000000"
-        android:pathData="M19,0L19,108"
-        android:strokeWidth="0.8"
-        android:strokeColor="#33FFFFFF" />
-    <path
-        android:fillColor="#00000000"
-        android:pathData="M29,0L29,108"
-        android:strokeWidth="0.8"
-        android:strokeColor="#33FFFFFF" />
-    <path
-        android:fillColor="#00000000"
-        android:pathData="M39,0L39,108"
-        android:strokeWidth="0.8"
-        android:strokeColor="#33FFFFFF" />
-    <path
-        android:fillColor="#00000000"
-        android:pathData="M49,0L49,108"
-        android:strokeWidth="0.8"
-        android:strokeColor="#33FFFFFF" />
-    <path
-        android:fillColor="#00000000"
-        android:pathData="M59,0L59,108"
-        android:strokeWidth="0.8"
-        android:strokeColor="#33FFFFFF" />
-    <path
-        android:fillColor="#00000000"
-        android:pathData="M69,0L69,108"
-        android:strokeWidth="0.8"
-        android:strokeColor="#33FFFFFF" />
-    <path
-        android:fillColor="#00000000"
-        android:pathData="M79,0L79,108"
-        android:strokeWidth="0.8"
-        android:strokeColor="#33FFFFFF" />
-    <path
-        android:fillColor="#00000000"
-        android:pathData="M89,0L89,108"
-        android:strokeWidth="0.8"
-        android:strokeColor="#33FFFFFF" />
-    <path
-        android:fillColor="#00000000"
-        android:pathData="M99,0L99,108"
-        android:strokeWidth="0.8"
-        android:strokeColor="#33FFFFFF" />
-    <path
-        android:fillColor="#00000000"
-        android:pathData="M0,9L108,9"
-        android:strokeWidth="0.8"
-        android:strokeColor="#33FFFFFF" />
-    <path
-        android:fillColor="#00000000"
-        android:pathData="M0,19L108,19"
-        android:strokeWidth="0.8"
-        android:strokeColor="#33FFFFFF" />
-    <path
-        android:fillColor="#00000000"
-        android:pathData="M0,29L108,29"
-        android:strokeWidth="0.8"
-        android:strokeColor="#33FFFFFF" />
-    <path
-        android:fillColor="#00000000"
-        android:pathData="M0,39L108,39"
-        android:strokeWidth="0.8"
-        android:strokeColor="#33FFFFFF" />
-    <path
-        android:fillColor="#00000000"
-        android:pathData="M0,49L108,49"
-        android:strokeWidth="0.8"
-        android:strokeColor="#33FFFFFF" />
-    <path
-        android:fillColor="#00000000"
-        android:pathData="M0,59L108,59"
-        android:strokeWidth="0.8"
-        android:strokeColor="#33FFFFFF" />
-    <path
-        android:fillColor="#00000000"
-        android:pathData="M0,69L108,69"
-        android:strokeWidth="0.8"
-        android:strokeColor="#33FFFFFF" />
-    <path
-        android:fillColor="#00000000"
-        android:pathData="M0,79L108,79"
-        android:strokeWidth="0.8"
-        android:strokeColor="#33FFFFFF" />
-    <path
-        android:fillColor="#00000000"
-        android:pathData="M0,89L108,89"
-        android:strokeWidth="0.8"
-        android:strokeColor="#33FFFFFF" />
-    <path
-        android:fillColor="#00000000"
-        android:pathData="M0,99L108,99"
-        android:strokeWidth="0.8"
-        android:strokeColor="#33FFFFFF" />
-    <path
-        android:fillColor="#00000000"
-        android:pathData="M19,29L89,29"
-        android:strokeWidth="0.8"
-        android:strokeColor="#33FFFFFF" />
-    <path
-        android:fillColor="#00000000"
-        android:pathData="M19,39L89,39"
-        android:strokeWidth="0.8"
-        android:strokeColor="#33FFFFFF" />
-    <path
-        android:fillColor="#00000000"
-        android:pathData="M19,49L89,49"
-        android:strokeWidth="0.8"
-        android:strokeColor="#33FFFFFF" />
-    <path
-        android:fillColor="#00000000"
-        android:pathData="M19,59L89,59"
-        android:strokeWidth="0.8"
-        android:strokeColor="#33FFFFFF" />
-    <path
-        android:fillColor="#00000000"
-        android:pathData="M19,69L89,69"
-        android:strokeWidth="0.8"
-        android:strokeColor="#33FFFFFF" />
-    <path
-        android:fillColor="#00000000"
-        android:pathData="M19,79L89,79"
-        android:strokeWidth="0.8"
-        android:strokeColor="#33FFFFFF" />
-    <path
-        android:fillColor="#00000000"
-        android:pathData="M29,19L29,89"
-        android:strokeWidth="0.8"
-        android:strokeColor="#33FFFFFF" />
-    <path
-        android:fillColor="#00000000"
-        android:pathData="M39,19L39,89"
-        android:strokeWidth="0.8"
-        android:strokeColor="#33FFFFFF" />
-    <path
-        android:fillColor="#00000000"
-        android:pathData="M49,19L49,89"
-        android:strokeWidth="0.8"
-        android:strokeColor="#33FFFFFF" />
-    <path
-        android:fillColor="#00000000"
-        android:pathData="M59,19L59,89"
-        android:strokeWidth="0.8"
-        android:strokeColor="#33FFFFFF" />
-    <path
-        android:fillColor="#00000000"
-        android:pathData="M69,19L69,89"
-        android:strokeWidth="0.8"
-        android:strokeColor="#33FFFFFF" />
-    <path
-        android:fillColor="#00000000"
-        android:pathData="M79,19L79,89"
-        android:strokeWidth="0.8"
-        android:strokeColor="#33FFFFFF" />
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <path android:fillColor="#3DDC84"
+          android:pathData="M0,0h108v108h-108z"/>
+    <path android:fillColor="#00000000" android:pathData="M9,0L9,108"
+          android:strokeColor="#33FFFFFF" android:strokeWidth="0.8"/>
+    <path android:fillColor="#00000000" android:pathData="M19,0L19,108"
+          android:strokeColor="#33FFFFFF" android:strokeWidth="0.8"/>
+    <path android:fillColor="#00000000" android:pathData="M29,0L29,108"
+          android:strokeColor="#33FFFFFF" android:strokeWidth="0.8"/>
+    <path android:fillColor="#00000000" android:pathData="M39,0L39,108"
+          android:strokeColor="#33FFFFFF" android:strokeWidth="0.8"/>
+    <path android:fillColor="#00000000" android:pathData="M49,0L49,108"
+          android:strokeColor="#33FFFFFF" android:strokeWidth="0.8"/>
+    <path android:fillColor="#00000000" android:pathData="M59,0L59,108"
+          android:strokeColor="#33FFFFFF" android:strokeWidth="0.8"/>
+    <path android:fillColor="#00000000" android:pathData="M69,0L69,108"
+          android:strokeColor="#33FFFFFF" android:strokeWidth="0.8"/>
+    <path android:fillColor="#00000000" android:pathData="M79,0L79,108"
+          android:strokeColor="#33FFFFFF" android:strokeWidth="0.8"/>
+    <path android:fillColor="#00000000" android:pathData="M89,0L89,108"
+          android:strokeColor="#33FFFFFF" android:strokeWidth="0.8"/>
+    <path android:fillColor="#00000000" android:pathData="M99,0L99,108"
+          android:strokeColor="#33FFFFFF" android:strokeWidth="0.8"/>
+    <path android:fillColor="#00000000" android:pathData="M0,9L108,9"
+          android:strokeColor="#33FFFFFF" android:strokeWidth="0.8"/>
+    <path android:fillColor="#00000000" android:pathData="M0,19L108,19"
+          android:strokeColor="#33FFFFFF" android:strokeWidth="0.8"/>
+    <path android:fillColor="#00000000" android:pathData="M0,29L108,29"
+          android:strokeColor="#33FFFFFF" android:strokeWidth="0.8"/>
+    <path android:fillColor="#00000000" android:pathData="M0,39L108,39"
+          android:strokeColor="#33FFFFFF" android:strokeWidth="0.8"/>
+    <path android:fillColor="#00000000" android:pathData="M0,49L108,49"
+          android:strokeColor="#33FFFFFF" android:strokeWidth="0.8"/>
+    <path android:fillColor="#00000000" android:pathData="M0,59L108,59"
+          android:strokeColor="#33FFFFFF" android:strokeWidth="0.8"/>
+    <path android:fillColor="#00000000" android:pathData="M0,69L108,69"
+          android:strokeColor="#33FFFFFF" android:strokeWidth="0.8"/>
+    <path android:fillColor="#00000000" android:pathData="M0,79L108,79"
+          android:strokeColor="#33FFFFFF" android:strokeWidth="0.8"/>
+    <path android:fillColor="#00000000" android:pathData="M0,89L108,89"
+          android:strokeColor="#33FFFFFF" android:strokeWidth="0.8"/>
+    <path android:fillColor="#00000000" android:pathData="M0,99L108,99"
+          android:strokeColor="#33FFFFFF" android:strokeWidth="0.8"/>
+    <path android:fillColor="#00000000" android:pathData="M19,29L89,29"
+          android:strokeColor="#33FFFFFF" android:strokeWidth="0.8"/>
+    <path android:fillColor="#00000000" android:pathData="M19,39L89,39"
+          android:strokeColor="#33FFFFFF" android:strokeWidth="0.8"/>
+    <path android:fillColor="#00000000" android:pathData="M19,49L89,49"
+          android:strokeColor="#33FFFFFF" android:strokeWidth="0.8"/>
+    <path android:fillColor="#00000000" android:pathData="M19,59L89,59"
+          android:strokeColor="#33FFFFFF" android:strokeWidth="0.8"/>
+    <path android:fillColor="#00000000" android:pathData="M19,69L89,69"
+          android:strokeColor="#33FFFFFF" android:strokeWidth="0.8"/>
+    <path android:fillColor="#00000000" android:pathData="M19,79L89,79"
+          android:strokeColor="#33FFFFFF" android:strokeWidth="0.8"/>
+    <path android:fillColor="#00000000" android:pathData="M29,19L29,89"
+          android:strokeColor="#33FFFFFF" android:strokeWidth="0.8"/>
+    <path android:fillColor="#00000000" android:pathData="M39,19L39,89"
+          android:strokeColor="#33FFFFFF" android:strokeWidth="0.8"/>
+    <path android:fillColor="#00000000" android:pathData="M49,19L49,89"
+          android:strokeColor="#33FFFFFF" android:strokeWidth="0.8"/>
+    <path android:fillColor="#00000000" android:pathData="M59,19L59,89"
+          android:strokeColor="#33FFFFFF" android:strokeWidth="0.8"/>
+    <path android:fillColor="#00000000" android:pathData="M69,19L69,89"
+          android:strokeColor="#33FFFFFF" android:strokeWidth="0.8"/>
+    <path android:fillColor="#00000000" android:pathData="M79,19L79,89"
+          android:strokeColor="#33FFFFFF" android:strokeWidth="0.8"/>
 </vector>
 </file>
 
@@ -1114,14 +1303,26 @@ val Typography = Typography(
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="Service is running"
-        android:textSize="18sp" />
+        android:text="Enter target app package name:"
+        android:textSize="16sp" />
+
+    <EditText
+        android:id="@+id/etPackageName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="16dp"
+        android:hint="com.example.app"
+        android:inputType="text"
+        android:padding="12dp"
+        android:text="com.example.unwantedcallblocker" />
 
     <TextView
+        android:id="@+id/tvStatus"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:text="App will launch on incoming calls"
+        android:text="Service not running"
         android:textSize="14sp" />
 
     <Button
@@ -1141,24 +1342,6 @@ val Typography = Typography(
         android:padding="16dp" />
 
 </LinearLayout>
-</file>
-
-<file path="app/src/main/res/mipmap-anydpi/ic_launcher_round.xml">
-<?xml version="1.0" encoding="utf-8"?>
-<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
-    <background android:drawable="@drawable/ic_launcher_background" />
-    <foreground android:drawable="@drawable/ic_launcher_foreground" />
-    <monochrome android:drawable="@drawable/ic_launcher_foreground" />
-</adaptive-icon>
-</file>
-
-<file path="app/src/main/res/mipmap-anydpi/ic_launcher.xml">
-<?xml version="1.0" encoding="utf-8"?>
-<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
-    <background android:drawable="@drawable/ic_launcher_background" />
-    <foreground android:drawable="@drawable/ic_launcher_foreground" />
-    <monochrome android:drawable="@drawable/ic_launcher_foreground" />
-</adaptive-icon>
 </file>
 
 <file path="app/src/main/res/values/colors.xml">
@@ -1287,37 +1470,52 @@ kotlin.code.style=official
 # resources declared in the library itself and none from the library's dependencies,
 # thereby reducing the size of the R class for that library
 android.nonTransitiveRClass=true
+# Versioning
+VERSION_NAME=1.5.1
+VERSION_CODE=15
 </file>
 
 <file path="gradle/libs.versions.toml">
 [versions]
-# Plugins - MUST use compatible versions
-agp = "8.13.2"  # Changed from 8.13.2 to stable 8.2.0
+# Plugins
+agp = "8.13.2"  # Fixed: Use compatible version
+kotlin = "2.2.21"  # Fixed: Compatible with AGP 8.2.2
 concurrent-futures = "1.3.0"
-kotlin = "2.2.21"  # Changed from 2.2.21 to 1.9.22 (compatible with AGP 8.2.0)
+guava = "33.5.0-android"
 
-# Libraries - Use compatible versions
-core-ktx = "1.17.0"
-appcompat = "1.7.1"
-material = "1.13.0"
-constraintlayout = "2.2.1"
-work-runtime-ktx = "2.11.0"
-coroutines-android = "1.10.2"
-lifecycle-runtime-ktx = "2.10.0"
-lifecycle-service = "2.10.0"
+# Libraries
+core-ktx = "1.17.0"  # Updated to match compileSdk 36
+appcompat = "1.7.1"  # Updated
+material = "1.13.0"  # Updated
+constraintlayout = "2.2.1"  # Updated
+work-runtime-ktx = "2.11.0"  # Updated
+coroutines-android = "1.10.2"  # Updated
+lifecycle-runtime-ktx = "2.10.0"  # Updated
+lifecycle-service = "2.10.0"  # Updated
 # Compose
-compose-bom = "2025.12.00"
-compose-compiler = "1.5.7"
-androidx-activity-compose = "1.12.1"
+compose-bom = "2025.12.00"  # Updated to stable version
+compose-compiler = "1.5.10"  # Updated to match Kotlin
+androidx-activity-compose = "1.12.1"  # Updated
 junit = "4.13.2"
-ext-junit = "1.3.0"
-espresso-core = "3.7.0"
+ext-junit = "1.3.0"  # Updated
+espresso-core = "3.7.0"  # Updated
+# Detekt
+detekt = "1.23.8"
+detektCompose = "0.5.0"
+# Build
+app-build-compileSDKVersion = "36"
+app-build-targetSDK = "36"
+app-build-minimumSDK = "26"
+app-build-javaVersion = "VERSION_17"
+app-build-kotlinJVMTarget = "17"
+dotenv = "5.2.2"
 
 [libraries]
 # AndroidX
 androidx-concurrent-futures = { module = "androidx.concurrent:concurrent-futures", version.ref = "concurrent-futures" }
 core-ktx = { module = "androidx.core:core-ktx", version.ref = "core-ktx" }
 appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
+guava = { module = "com.google.guava:guava", version.ref = "guava" }
 material = { module = "com.google.android.material:material", version.ref = "material" }
 constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version.ref = "constraintlayout" }
 
@@ -1340,7 +1538,6 @@ androidx-compose-material = { group = "androidx.compose.material", name = "mater
 androidx-compose-material3 = { group = "androidx.compose.material3", name = "material3" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "androidx-activity-compose" }
 
-
 # Testing
 junit = { module = "junit:junit", version.ref = "junit" }
 ext-junit = { module = "androidx.test.ext:junit", version.ref = "ext-junit" }
@@ -1350,16 +1547,15 @@ espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref =
 android-application = { id = "com.android.application", version.ref = "agp" }
 android-library = { id = "com.android.library", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
-# kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin-compose" }
 compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
+dotenv = { id = "io.github.cdimascio.dotenv", version.ref = "dotenv" }
 </file>
 
 <file path="gradle/wrapper/gradle-wrapper.properties">
 distributionBase=GRADLE_USER_HOME
 distributionPath=wrapper/dists
 distributionUrl=https\://services.gradle.org/distributions/gradle-8.14.3-bin.zip
-networkTimeout=10000
-validateDistributionUrl=true
 zipStoreBase=GRADLE_USER_HOME
 zipStorePath=wrapper/dists
 </file>

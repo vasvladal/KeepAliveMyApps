@@ -15,7 +15,6 @@ class SimpleWorker(
         private const val TAG = "SimpleWorker"
 
         fun schedule(context: Context) {
-            // Schedule periodic work every 15 minutes for health checks
             val workRequest = androidx.work.PeriodicWorkRequestBuilder<SimpleWorker>(
                 15, TimeUnit.MINUTES
             )
@@ -24,18 +23,17 @@ class SimpleWorker(
 
             androidx.work.WorkManager.getInstance(context)
                 .enqueue(workRequest)
-            Log.d(TAG, "Worker scheduled")
+
+            val targetPackage = Config.getTargetPackage(context)
+            Log.d(TAG, "Worker scheduled for $targetPackage")
         }
     }
 
     override fun doWork(): Result {
+        val targetPackage = Config.getTargetPackage(applicationContext)
         Log.d(TAG, "Worker running - checking service health")
+        Log.d(TAG, "Monitoring target: $targetPackage")
 
-        // Log that worker is active (for debugging)
-        Log.d(TAG, "Periodic check: Service should be monitoring calls")
-
-        // Check if target app exists
-        val targetPackage = "com.example.unwantedcallblocker"
         val packageInfo = try {
             applicationContext.packageManager.getPackageInfo(targetPackage, 0)
             true
@@ -43,8 +41,7 @@ class SimpleWorker(
             false
         }
 
-        Log.d(TAG, "Target app ($targetPackage) installed: $packageInfo")
-
+        Log.d(TAG, "Target app '$targetPackage' installed: $packageInfo")
         return Result.success()
     }
 }
